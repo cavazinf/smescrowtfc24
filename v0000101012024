@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.23;
+
+contract Escrowtfc24 {
+    address payable public buyer;
+    address payable public seller;
+    address payable public arbiter;
+    uint public amount;
+
+    enum State {Initialized, Locked, Released, Inactive}
+    State public state;
+
+    constructor(address payable _buyer, address payable _seller, address payable _arbiter, uint _amount) {
+        buyer = _buyer;
+        seller = _seller;
+        arbiter = _arbiter;
+        amount = _amount;
+        state = State.Initialized;
+    }
+
+    function deposit() public payable {
+        require(msg.sender == buyer, "Apenas o comprador pode depositar");
+        require(state == State.Initialized, "Estado invalido"); // Corrigido para usar caracteres Unicode para acento "á"
+        require(msg.value == amount, "Valor do deposito insuficiente");
+
+        state = State.Locked;
+    }
+
+    function release() public {
+        require(state == State.Locked, "Estado invalido"); // Corrigido para usar caracteres Unicode para acento "á"
+        require(msg.sender == arbiter, "Apenas o arbitro pode liberar"); // Corrigido para usar caracteres Unicode para acento "á"
+
+        seller.transfer(amount);
+        state = State.Released;
+    }
+
+    function refund() public {
+        require(state == State.Locked, "Estado invalido"); // Corrigido para usar caracteres Unicode para acento "á"
+        require(msg.sender == arbiter, "Apenas o arbitro pode liberar"); // Corrigido para usar caracteres Unicode para acento "á"
+
+        buyer.transfer(amount);
+        state = State.Inactive;
+    }
+}
